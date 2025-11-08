@@ -15,7 +15,26 @@
     align-items: flex-end;
     font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
   }
-  canvas {
+  
+  /* Canvas para las estrellas (nuevo) */
+  #starsCanvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    opacity: 0;
+    transition: opacity 2s ease-in;
+  }
+
+  #starsCanvas.show {
+    opacity: 1;
+  }
+
+  #tree {
+    position: relative; /* Para que esté sobre el canvas de estrellas */
+    z-index: 1;
     display: block;
     transition: transform 3s ease-in-out; /* movimiento suave a la derecha */
   }
@@ -32,6 +51,7 @@
     opacity: 0;
     pointer-events: none;
     transition: opacity 1.2s ease;
+    z-index: 2;
   }
 
   .button-container.show {
@@ -56,11 +76,76 @@
     transform: scale(1.08);
   }
 
-  /* ======= Frase Caja (añadida) ======= */
+  /* ======= Títulos Animados ======= */
+  .title-container {
+    position: absolute;
+    top: 10%;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    text-align: center;
+    width: 90%;
+    height: 120px; /* Evita saltos de layout */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .title-container h1 {
+    font-family: "Poppins", sans-serif;
+    color: #4a2c0f;
+    font-size: 42px;
+    font-weight: 600;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+    opacity: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    margin: 0;
+    width: 0;
+    animation:
+      typing 3s steps(30, end) forwards,
+      stay 1s forwards 3s,
+      fadeOut 1s ease-in-out forwards 4s;
+  }
+
+  /* Estilo del título final */
+  .title-container h1.final-title {
+    color: #ff2f61;
+    font-size: 52px;
+    text-align: center;
+    font-weight: 700;
+    text-shadow: 0 0 15px rgba(255, 47, 97, 0.5);
+    white-space: normal;
+    width: auto;
+    overflow: visible;
+    animation: fadeIn 1.5s ease-in-out forwards;
+  }
+
+  /* ======= Animaciones ======= */
+  @keyframes typing {
+    from { width: 0; opacity: 1; }
+    to { width: 100%; opacity: 1; }
+  }
+
+  @keyframes stay {
+    from { opacity: 1; }
+    to { opacity: 1; }
+  }
+
+  @keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  /* ======= Frase Caja ======= */
   .frase-box {
     position: absolute;
     left: 300px; /* separada de los botones */
-    top: 30%;
+    top: 40%;
     transform: translateY(-50%);
     max-width: 600px;
     min-width: 400px;
@@ -75,8 +160,7 @@
     opacity: 0;
     transition: opacity 0.5s ease, transform 0.35s ease;
     pointer-events: none;
-    display: flex;
-    align-items: center;
+    z-index: 2;
   }
 
   .frase-box.show {
@@ -92,28 +176,296 @@
     color: #ff2f61;
   }
 
-  .frase-cursor {
-    display: inline-block;
-    width: 8px;
-    height: 26px;
-    margin-left: 8px;
-    background: #ff2f61;
-    border-radius: 3px;
-    vertical-align: bottom;
-    animation: blink 0.8s steps(1) infinite;
-  }
-
   @keyframes blink {
     50% { opacity: 0; }
   }
 
+  /* ======= Botón de Play ======= */
+  .play-button-container {
+    position: absolute;
+    left: 560px;
+    top: 68%; /* Posicionado entre la frase y el contador */
+    transform: translateY(-50%);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.8s ease 0.2s;
+    z-index: 2;
+  }
+
+  .play-button-container.show {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  #btnPlayAudio {
+    background-color: #ff5c8a;
+    border: none;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.25);
+    transition: transform 0.2s, background-color 0.3s;
+  }
+
+  #btnPlayAudio:hover {
+    background-color: #ff85a2;
+    transform: scale(1.1);
+  }
+
+  #btnPlayAudio:disabled {
+    background-color: #ff9ecb;
+    cursor: not-allowed;
+    transform: scale(1);
+  }
+
+  #btnPlayAudio svg {
+    width: 32px;
+    height: 32px;
+    fill: white;
+    margin-left: 4px; /* Ajuste visual del icono */
+  }
+
+  /* ======= Contador de Tiempo ======= */
+  .timer-container {
+    position: absolute;
+    left: 300px; /* Misma alineación que la frase */
+    top: 85%; /* Debajo de la frase */
+    transform: translateY(-50%);
+    opacity: 0;
+    transition: opacity 0.8s ease 0.3s;
+    pointer-events: none;
+    font-family: "Poppins", sans-serif;
+    color: #ff2f61;
+    text-align: center;
+    z-index: 2;
+  }
+
+  .timer-container.show {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .timer-title {
+    font-size: 30px;
+    font-weight: 500;
+    margin-bottom: 12px;
+    letter-spacing: 0.5px;
+    color: #ff516f;
+    text-shadow: none;
+    font-style: italic;
+  }
+
+  .timer-display {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    background: rgba(255,255,255,0.07);
+    backdrop-filter: blur(6px);
+    padding: 12px 22px;
+    border-radius: 14px;
+    box-shadow: none;
+  }
+
+  .time-segment {
+    display: inline-flex;
+    align-items: baseline;
+    line-height: 1;
+  }
+
+  .time-value {
+    font-weight: 700;
+    color: #e13d62;
+  }
+
+  .time-label {
+    font-weight: 700; /* Negrita */
+    margin-left: 8px;
+    color: #ff9ecb;
+    text-transform: lowercase;
+  }
+
+  /* Tamaños descendientes */
+  #days { font-size: 42px; }
+  #days + .time-label { font-size: 20px; }
+
+  #hours { font-size: 36px; }
+  #hours + .time-label { font-size: 19px; }
+
+  #minutes { font-size: 30px; }
+  #minutes + .time-label { font-size: 18px; }
+
+  #seconds { font-size: 24px; }
+  #seconds + .time-label { font-size: 17px; }
+
+
   /* Pequeña responsividad */
   @media (max-width: 900px) {
     .frase-box { left: 80px; font-size: 18px; max-width: 320px; }
+    .play-button-container { left: 80px; top: 55%; }
+    .timer-container {
+      left: 80px;
+      top: 70%;
+      transform: translateX(0) translateY(-50%);
+      max-width: 320px;
+    }
+    .timer-display {
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      padding: 10px 15px;
+    }
+    #days { font-size: 30px; }
+    #days + .time-label { font-size: 12px; }
+    #hours { font-size: 26px; }
+    #hours + .time-label { font-size: 11px; }
+    #minutes { font-size: 22px; }
+    #minutes + .time-label { font-size: 10px; }
+    #seconds { font-size: 18px; }
+    #seconds + .time-label { font-size: 9px; }
   }
+
+  /* ======= Modal de Curiosidades ======= */
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+
+  .modal-overlay.show {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .modal-content {
+    background: #fff;
+    color: #333;
+    padding: 30px;
+    border-radius: 20px;
+    max-width: 500px;
+    width: 90%;
+    max-height: 90vh;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    transform: scale(0.95);
+    transition: transform 0.3s ease;
+  }
+
+  .modal-overlay.show .modal-content {
+    transform: scale(1);
+  }
+
+  .modal-close {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: none;
+    border: none;
+    font-size: 30px;
+    color: #aaa;
+    cursor: pointer;
+    line-height: 1;
+    transition: color 0.2s, transform 0.2s;
+  }
+
+  .modal-close:hover {
+    color: #333;
+    transform: scale(1.1);
+  }
+
+  .modal-text {
+    font-family: "Poppins", sans-serif;
+    font-size: 18px;
+    line-height: 1.6;
+    text-align: center;
+    color: #555;
+  }
+
+  .modal-image-container {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    border-radius: 12px;
+    overflow: hidden;
+    background-color: #f0f0f0;
+  }
+
+  .modal-image-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  /* ======= Flechas de Navegación del Modal (añadido) ======= */
+  .modal-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.8);
+    border: none;
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    transition: transform 0.2s, background-color 0.2s;
+    color: #333;
+  }
+
+  .modal-nav:hover {
+    transform: translateY(-50%) scale(1.1);
+    background-color: #fff;
+  }
+
+  .modal-nav.prev {
+    left: calc(50% - 250px - 35px); /* 50% - mitad_modal - espacio */
+  }
+
+  .modal-nav.next {
+    right: calc(50% - 250px - 35px);
+  }
+
+  .modal-nav svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  @media (max-width: 650px) {
+    .modal-nav.prev { left: 5px; }
+    .modal-nav.next { right: 5px; }
+  }
+
 </style>
 </head>
 <body>
+<!-- Títulos animados -->
+<div class="title-container" id="titleContainer">
+  <h1 id="animatedTitle"></h1>
+</div>
+
+<canvas id="starsCanvas"></canvas>
+<audio src="musica.mp3" autoplay loop></audio>
+<audio id="randomAudioPlayer"></audio>
 <canvas id="tree"></canvas>
 
 <!-- Botones ocultos hasta el final -->
@@ -122,10 +474,59 @@
   <button id="btnCuriosidades">Curiosidades</button>
 </div>
 
-<!-- Caja para mostrar las frases (añadida) -->
+<!-- Caja para mostrar las frases -->
 <div class="frase-box" id="fraseBox" aria-live="polite">
   <div class="frase-text" id="fraseText"></div>
-  <div class="frase-cursor" id="fraseCursor" aria-hidden="true"></div>
+  <div class="frase-cursor" id="cursor" aria-hidden="true"></div>
+</div>
+
+<!-- Botón de Play para audios -->
+<div class="play-button-container" id="playButtonContainer">
+  <button id="btnPlayAudio" aria-label="Reproducir audio">
+    <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+  </button>
+</div>
+
+<!-- Contador de Tiempo -->
+<div class="timer-container" id="timerContainer">
+  <p class="timer-title">Tiempo pasado desde que me flechaste uwu</p>
+  <div class="timer-display">
+    <span class="time-segment">
+      <span id="days" class="time-value">00</span>
+      <span class="time-label">dias</span>
+    </span>
+    <span class="time-segment">
+      <span id="hours" class="time-value">00</span>
+      <span class="time-label">horas</span>
+    </span>
+    <span class="time-segment">
+      <span id="minutes" class="time-value">00</span>
+      <span class="time-label">minutos</span>
+    </span>
+    <span class="time-segment">
+      <span id="seconds" class="time-value">00</span>
+      <span class="time-label">segundos</span>
+    </span>
+  </div>
+</div>
+
+
+<!-- Modal de Curiosidades -->
+<div class="modal-overlay" id="curiosidadesModalOverlay">
+  <div class="modal-content" id="curiosidadesModalContent">
+    <button class="modal-close" id="modalCloseBtn">&times;</button>
+    <p class="modal-text" id="curiosidadText"></p>
+    <div class="modal-image-container">
+      <img src="" alt="Curiosidad de amor" id="curiosidadImage">
+    </div>
+  </div>
+  <!-- Flechas de navegación (añadido) -->
+  <button class="modal-nav prev" id="modalPrevBtn" aria-label="Anterior">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+  </button>
+  <button class="modal-nav next" id="modalNextBtn" aria-label="Siguiente">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+  </button>
 </div>
 
 <script>
@@ -133,6 +534,12 @@ const canvas = document.getElementById("tree");
 const ctx = canvas.getContext("2d");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
+
+// Nuevo: Canvas para estrellas
+const starsCanvas = document.getElementById("starsCanvas");
+const starsCtx = starsCanvas.getContext("2d");
+starsCanvas.width = window.innerWidth;
+starsCanvas.height = window.innerHeight;
 
 const baseX = canvas.width / 2;
 const baseY = canvas.height * 0.95;
@@ -340,26 +747,20 @@ function animate() {
 function moveCanvasRight() {
   canvas.style.transform = "translateX(400px)";
 
-  // Cuando termine la transición de 3s, mostrar los botones
+  // Cuando termine la transición de 3s, mostrar los botones, el contador y las estrellas
   canvas.addEventListener("transitionend", () => {
-    const buttonContainer = document.getElementById("buttonContainer");
-    buttonContainer.classList.add("show");
+    document.getElementById("buttonContainer").classList.add("show");
+    document.getElementById("playButtonContainer").classList.add("show");
+    document.getElementById("timerContainer").classList.add("show");
+    
+    // Mostrar título final
+    const titleEl = document.getElementById("animatedTitle");
+    titleEl.innerHTML = "El arbol de<br>Camila y Farid"; // Modificado para dos líneas
+    titleEl.className = 'final-title'; // Add class for final styling
+    titleEl.style.animation = ''; // Clear previous animations
+
+    startStarsAnimation(); // Iniciar animación de estrellas
   }, { once: true });
-}
-
-function start() {
-  branches = [];
-  trunkBranches = [];
-  mainBranches = [];
-  thinBranches = [];
-  leaves = [];
-  heartLeaves = [];
-  fallingHearts = [];
-  startTime = null;
-
-  generateTree(baseX, baseY, 180, Math.PI / 2, maxDepth, 35);
-  buildTreePath();
-  requestAnimationFrame(grow);
 }
 
 function grow(timestamp) {
@@ -387,67 +788,165 @@ function grow(timestamp) {
   }
 }
 
+/* ===========================
+   Código para Títulos Animados
+   =========================== */
+function animateTitles() {
+  const titleEl = document.getElementById("animatedTitle");
+  
+  const text1 = "Así creció el arbol de nuestro amor...";
+  const text2 = "Lo fuimos cuidando y ahora es más grande que nunca.";
+  
+  const duration1 = text1.length * 80;
+  const duration2 = text2.length * 80;
+  const delay = 2000;
+  const fadeDuration = 1000;
+
+  // --- Secuencia ---
+  
+  // 1. Escribir primer título
+  setTimeout(() => {
+    titleEl.textContent = text1;
+    titleEl.style.animation = `typing ${duration1 / 1000}s steps(${text1.length}, end) forwards`;
+  }, 500);
+
+  // 2. Desvanecer primer título
+  setTimeout(() => {
+    titleEl.style.animation = `fadeOut ${fadeDuration / 1000}s forwards`;
+  }, 500 + duration1 + delay);
+
+  // 3. Escribir segundo título
+  setTimeout(() => {
+    titleEl.textContent = text2;
+    titleEl.style.width = '0'; 
+    titleEl.style.animation = `typing ${duration2 / 1000}s steps(${text2.length}, end) forwards`;
+  }, 500 + duration1 + delay + fadeDuration);
+
+  // 4. Desvanecer segundo título
+  setTimeout(() => {
+    titleEl.style.animation = `fadeOut ${fadeDuration / 1000}s forwards`;
+  }, 500 + duration1 + delay + fadeDuration + duration2 + delay);
+}
+
+function start() {
+  branches = [];
+  trunkBranches = [];
+  mainBranches = [];
+  thinBranches = [];
+  leaves = [];
+  heartLeaves = [];
+  fallingHearts = [];
+  startTime = null;
+
+  generateTree(baseX, baseY, 180, Math.PI / 2, maxDepth, 35);
+  buildTreePath();
+  animateTitles();
+  requestAnimationFrame(grow);
+}
+
 start();
 
 /* ===========================
-   Código añadido para frases
+   Código para Estrellas Fugaces (Modificado)
+   =========================== */
+let stars = [];
+const numStars = 70;
+
+function createStar() {
+    return {
+        x: Math.random() * starsCanvas.width,
+        y: Math.random() * starsCanvas.height,
+        len: Math.random() * 80 + 40, // Estela más larga
+        size: Math.random() * 2.5 + 1,  // Tamaño más grande y variado (1 a 3.5)
+        speedX: Math.random() * 5 + 4,   // Más rápidas (4 a 9)
+        speedY: Math.random() * 2.5 + 2, // Más rápidas, manteniendo diagonal (2 a 4.5)
+        opacity: Math.random() * 0.5 + 0.5, // Más opacas (0.5 a 1.0)
+    };
+}
+
+function initStars() {
+    for (let i = 0; i < numStars; i++) {
+        stars.push(createStar());
+    }
+}
+
+function drawShootingStar(star) {
+    const tailX = star.x - star.len;
+    const tailY = star.y - (star.len * star.speedY / star.speedX);
+
+    const grad = starsCtx.createLinearGradient(star.x, star.y, tailX, tailY);
+    grad.addColorStop(0, `rgba(255, 255, 224, ${star.opacity})`);
+    grad.addColorStop(1, 'rgba(255, 255, 224, 0)');
+
+    starsCtx.strokeStyle = grad;
+    starsCtx.lineWidth = star.size;
+    starsCtx.lineCap = 'round';
+    starsCtx.shadowColor = 'rgba(255, 255, 150, 0.9)';
+    starsCtx.shadowBlur = 20;
+
+    starsCtx.beginPath();
+    starsCtx.moveTo(star.x, star.y);
+    starsCtx.lineTo(tailX, tailY);
+    starsCtx.stroke();
+    
+    starsCtx.shadowColor = 'transparent';
+    starsCtx.shadowBlur = 0;
+}
+
+function updateStars() {
+    for (let i = 0; i < stars.length; i++) {
+        stars[i].x += stars[i].speedX;
+        stars[i].y += stars[i].speedY;
+
+        if (stars[i].x - stars[i].len > starsCanvas.width || stars[i].y - stars[i].len > starsCanvas.height) {
+            Object.assign(stars[i], createStar());
+            stars[i].x = -stars[i].len;
+            stars[i].y = Math.random() * starsCanvas.height;
+        }
+    }
+}
+
+function animateStars() {
+    starsCtx.clearRect(0, 0, starsCanvas.width, starsCanvas.height);
+    updateStars();
+    stars.forEach(drawShootingStar);
+    requestAnimationFrame(animateStars);
+}
+
+function startStarsAnimation() {
+    starsCanvas.classList.add("show");
+    initStars();
+    animateStars();
+}
+
+
+/* ===========================
+   Código para frases
    =========================== */
 
-/* 30 frases (tema amor moderno, lindas) */
 const frases = [
-  "Eres mi casualidad más bonita.",
-  "Tu sonrisa ilumina mis días más grises.",
-  "Amarte es mi forma favorita de pasar el tiempo.",
-  "Desde que llegaste, todo tiene sentido.",
-  "Tu abrazo es mi lugar seguro.",
-  "Eres mi pensamiento favorito.",
-  "Te miro y me siento en casa.",
-  "El amor eres tú en todas tus formas.",
-  "Cada latido me recuerda por qué te elijo.",
-  "Tu voz suena como mi melodía favorita.",
-  "Contigo, los segundos saben a eternidad.",
-  "No busco finales felices, te busco a ti.",
-  "Eres mi sueño que no quiero despertar.",
-  "Tus ojos tienen el brillo que mi alma buscaba.",
-  "Si sonrío sin razón, es por tu culpa.",
-  "Tu amor es el color de mi mundo.",
-  "Eres la poesía que no sabía que quería leer.",
-  "Cada día contigo se siente como magia.",
-  "Te pienso, y el corazón me late más bonito.",
-  "Eres la calma después de mis tormentas.",
-  "No hay distancia para lo que siento por ti.",
-  "Eres mi amanecer favorito.",
-  "Tenerte cerca es mi definición de felicidad.",
-  "Tu risa es mi sonido preferido.",
-  "Eres el capítulo más dulce de mi historia.",
-  "Si el amor tuviera rostro, sería el tuyo.",
-  "Te amo sin pausas ni condiciones.",
-  "Eres la casualidad más hermosa que el destino planeó.",
-  "Cada día contigo es un pequeño paraíso.",
-  "Eres mi lugar favorito en el mundo."
+  "Eres mi casualidad más bonita.", "Tu sonrisa ilumina mis días más grises.", "Amarte es mi forma favorita de pasar el tiempo.", "Desde que llegaste, todo tiene sentido.", "Tu abrazo es mi lugar seguro.", "Eres mi pensamiento favorito.", "Te miro y me siento en casa.", "El amor eres tú en todas tus formas.", "Cada latido me recuerda por qué te elijo.", "Tu voz suena como mi melodía favorita.", "Contigo, los segundos saben a eternidad.", "No busco finales felices, te busco a ti.", "Eres mi sueño que no quiero despertar.", "Tus ojos tienen el brillo que mi alma buscaba.", "Si sonrío sin razón, es por tu culpa.", "Tu amor es el color de mi mundo.", "Eres la poesía que no sabía que quería leer.", "Cada día contigo se siente como magia.", "Te pienso, y el corazón me late más bonito.", "Eres la calma después de mis tormentas.", "No hay distancia para lo que siento por ti.", "Eres mi amanecer favorito.", "Tenerte cerca es mi definición de felicidad.", "Tu risa es mi sonido preferido.", "Eres el capítulo más dulce de mi historia.", "Si el amor tuviera rostro, sería el tuyo.", "Te amo sin pausas ni condiciones.", "Eres la casualidad más hermosa que el destino planeó.", "Cada día contigo es un pequeño paraíso.", "Eres mi lugar favorito en el mundo."
 ];
 
-/* Pesos/probabilidades iniciales */
 let pesos = Array(frases.length).fill(1);
-
-/* Umbral para resetear: cuando todos los pesos estén muy bajos (p.ej. < 0.25) reiniciamos a 1 */
 const RESET_THRESHOLD = 0.25;
-
-/* Elementos DOM para frases */
 const btnFrases = document.getElementById("btnFrases");
 const fraseBox = document.getElementById("fraseBox");
 const fraseText = document.getElementById("fraseText");
-const fraseCursor = document.getElementById("fraseCursor");
+const cursor = document.getElementById("cursor");
 
-/* Función para elegir frase aleatoria con pesos (preferencia a pesos altos) */
+function ajustarAlturaCursor() {
+  const fraseStyle = window.getComputedStyle(fraseText);
+  const alturaFuente = parseFloat(fraseStyle.fontSize);
+  cursor.style.height = `${alturaFuente * 0.9}px`;
+}
+
 function elegirFrasePorPeso() {
   const total = pesos.reduce((a,b) => a + b, 0);
   let r = Math.random() * total;
   for (let i = 0; i < pesos.length; i++) {
     if (r < pesos[i]) {
-      // reducir la probabilidad de esta frase para las siguientes selecciones
-      pesos[i] *= 0.22; // reduce bastante la probabilidad de volver a salir pronto
-      // si todos los pesos son muy pequeños, resetear
+      pesos[i] *= 0.22;
       if (pesos.every(p => p < RESET_THRESHOLD)) {
         pesos = Array(frases.length).fill(1);
       }
@@ -458,42 +957,166 @@ function elegirFrasePorPeso() {
   return frases[0];
 }
 
-/* Efecto máquina de escribir (no borra funciones existentes) */
 let typingTimeout = null;
 function escribirMaquina(texto, speed = 40) {
-  // mostrar caja (pero solo si ya se mostró container de botones)
   fraseBox.classList.add("show");
   fraseText.textContent = "";
-  fraseCursor.style.display = "inline-block";
-
+  cursor.style.display = "inline-block";
   let idx = 0;
   if (typingTimeout) { clearTimeout(typingTimeout); typingTimeout = null; }
-
   function step() {
     if (idx <= texto.length - 1) {
-      // añadir caracter
       fraseText.textContent += texto[idx];
       idx++;
-      typingTimeout = setTimeout(step, speed + Math.floor(Math.random() * 30)); // pequeña variación
+      typingTimeout = setTimeout(step, speed + Math.floor(Math.random() * 30));
     } else {
-      // terminado, ocultar cursor tras un instante
-      fraseCursor.style.display = "none";
+      setTimeout(() => { cursor.style.display = "none"; }, 2000);
     }
   }
   step();
 }
 
-/* Mostrar frase al click — solo después de que los botones estén visibles (ese control lo deja el transitionend original) */
 btnFrases.addEventListener("click", () => {
-  // Si la caja de botones no está visible aún, forzamos su aparición mínima (por seguridad)
-  const btnContainer = document.getElementById("buttonContainer");
-  if (!btnContainer.classList.contains("show")) {
-    btnContainer.classList.add("show");
+  const frase = elegirFrasePorPeso();
+  escribirMaquina(frase, 36);
+});
+
+window.addEventListener("load", ajustarAlturaCursor);
+window.addEventListener("resize", () => {
+    // Ajustar tamaño de ambos canvas al cambiar tamaño de ventana
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    starsCanvas.width = window.innerWidth;
+    starsCanvas.height = window.innerHeight;
+    ajustarAlturaCursor();
+});
+
+
+/* =================================
+   Código para Curiosidades
+   ================================= */
+
+const curiosidades = [
+  "Su anime favorito es NARUTO. Tremenda otaku de closet",
+  "Sus apodos favoritos son princesa y bebé uwu",
+  "Su mejor amiga es Brissa y Emily",
+  "Su gata favorita es Lily uwu",
+  "Es una rata del Clash Royale, a veces me deja para irse a ratear",
+  "Se hace la resentida porque le gusta que la mimen mucho",
+  "Es una chica muy centrada y sabe lo que quiere lograr como pensar en que estudiar a tan temprana edad",
+  "Inventó el término BEBOTE y BEBOTA",
+  "Le gusta mandar fotos cuando hace popo",
+  "Siempre tiene temporadas de stickers pero el sticker que más le caracteriza es la del gato con botas",
+  "Le gusta más el salado que el dulce",
+  "Le encanta el caldito de gallina",
+  "Es muy golosa, siempre quele comer rico rico",
+  "Su película favorita es Crepúsculo",
+  "Su época más cringe fue la de papulince :V"
+];
+
+// Genera las rutas de las imágenes locales del 1 al 15
+const imagenesCuriosidades = Array.from({ length: 15 }, (_, i) => `images/imagen${i + 1}.jpg`);
+
+// Elementos del DOM para el modal
+const btnCuriosidades = document.getElementById("btnCuriosidades");
+const modalOverlay = document.getElementById("curiosidadesModalOverlay");
+const modalCloseBtn = document.getElementById("modalCloseBtn");
+const curiosidadText = document.getElementById("curiosidadText");
+const curiosidadImage = document.getElementById("curiosidadImage");
+const modalPrevBtn = document.getElementById("modalPrevBtn");
+const modalNextBtn = document.getElementById("modalNextBtn");
+
+let currentCuriosidadIndex = 0;
+
+// Función para mostrar una curiosidad específica
+function showCuriosidad(index) {
+  currentCuriosidadIndex = index;
+  curiosidadText.textContent = curiosidades[index];
+  curiosidadImage.src = imagenesCuriosidades[index];
+}
+
+// Evento para abrir el modal
+btnCuriosidades.addEventListener("click", () => {
+  const randomIndex = Math.floor(Math.random() * curiosidades.length);
+  showCuriosidad(randomIndex);
+  modalOverlay.classList.add("show");
+});
+
+// Eventos para las flechas de navegación
+modalNextBtn.addEventListener("click", () => {
+  const nextIndex = (currentCuriosidadIndex + 1) % curiosidades.length;
+  showCuriosidad(nextIndex);
+});
+
+modalPrevBtn.addEventListener("click", () => {
+  const prevIndex = (currentCuriosidadIndex - 1 + curiosidades.length) % curiosidades.length;
+  showCuriosidad(prevIndex);
+});
+
+// Función para cerrar el modal
+function closeModal() {
+  modalOverlay.classList.remove("show");
+}
+
+modalCloseBtn.addEventListener("click", closeModal);
+
+// Cerrar al hacer clic fuera del contenido
+modalOverlay.addEventListener("click", (event) => {
+  if (event.target === modalOverlay) {
+    closeModal();
+  }
+});
+
+/* ===========================
+   Código para el contador
+   =========================== */
+function startTimer() {
+  const startDate = new Date("2025-05-16T06:30:00");
+  const daysEl = document.getElementById("days");
+  const hoursEl = document.getElementById("hours");
+  const minutesEl = document.getElementById("minutes");
+  const secondsEl = document.getElementById("seconds");
+
+  function updateTimer() {
+    const now = new Date();
+    const difference = now - startDate;
+
+    if (difference < 0) return;
+
+    const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+
+    daysEl.textContent = String(days).padStart(2, '0');
+    hoursEl.textContent = String(hours).padStart(2, '0');
+    minutesEl.textContent = String(minutes).padStart(2, '0');
+    secondsEl.textContent = String(seconds).padStart(2, '0');
   }
 
-  // Elegir frase y escribirla
-  const frase = elegirFrasePorPeso();
-  escribirMaquina(frase, 36); // velocidad 36ms por carácter (ligeramente variable)
+  setInterval(updateTimer, 1000);
+  updateTimer(); // Llama inicial para no esperar 1 segundo
+}
+
+startTimer();
+
+/* ===========================
+   Código para audios aleatorios
+   =========================== */
+const btnPlayAudio = document.getElementById("btnPlayAudio");
+const randomAudioPlayer = document.getElementById("randomAudioPlayer");
+const audioFiles = Array.from({ length: 4 }, (_, i) => `audio${i + 1}.mp3`);
+
+btnPlayAudio.addEventListener("click", () => {
+  const randomIndex = Math.floor(Math.random() * audioFiles.length);
+  randomAudioPlayer.src = audioFiles[randomIndex];
+  randomAudioPlayer.play();
+  btnPlayAudio.disabled = true; // Deshabilita el botón mientras suena
+});
+
+// Vuelve a habilitar el botón cuando el audio termina
+randomAudioPlayer.addEventListener("ended", () => {
+  btnPlayAudio.disabled = false;
 });
 
 </script>
